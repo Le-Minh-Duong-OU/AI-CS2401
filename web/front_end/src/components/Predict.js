@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = "http://127.0.0.1:8000";
+import api from '../api';
 
 function Predict({ token, onPredictSuccess }) {
     const [formData, setFormData] = useState({
@@ -34,10 +32,10 @@ function Predict({ token, onPredictSuccess }) {
         // adr: 0,
         // required_car_parking_spaces: 0,
         // total_of_special_requests: 0
-        adr: 0,
-        lead_time: 0,
-        agent: 0,
-        previous_cancellations: 0,
+        adr: '',
+        lead_time: '',
+        agent: '',
+        previous_cancellations: '',
         deposit_type: "No Deposit"
     });
     const [result, setResult] = useState(null);
@@ -47,7 +45,6 @@ function Predict({ token, onPredictSuccess }) {
 
         try {
 
-            const config = { headers: { Authorization: `Bearer ${token}` } };
             console.log(formData)
             const dataToSend = {
                 // hotel: formData.hotel,
@@ -79,20 +76,27 @@ function Predict({ token, onPredictSuccess }) {
                 // adr: Number(formData.adr),
                 // required_car_parking_spaces: Number(formData.required_car_parking_spaces),
                 // total_of_special_requests: Number(formData.total_of_special_requests)
-                adr: Number(formData.adr),
-                lead_time: Number(formData.lead_time),
-                agent: Number(formData.agent),
-                previous_cancellations: Number(formData.previous_cancellations),
-                deposit_type: Number(formData.deposit_type),
+                adr: formData.adr ? parseFloat(formData.adr.toString().replace(/,/g, '')) : 0,
+                lead_time: formData.lead_time ? parseInt(formData.lead_time) : 0,
+                agent: formData.agent ? parseInt(formData.agent) : 0,
+                previous_cancellations: formData.previous_cancellations ? parseInt(formData.previous_cancellations) : 0,
+                deposit_type: formData.deposit_type,
             };
             console.log(dataToSend)
-            const response = await axios.post(`${API_BASE_URL}/predict`, dataToSend, config);
+            const response = await api.post(`/predict`, dataToSend);
             console.log("await")
 
             setResult(response.data);
 
             // Nếu dự đoán thành công, báo cho file cha biết để cập nhật lại lịch sử (nếu cần)
             if (onPredictSuccess) onPredictSuccess();
+            setFormData({
+                adr: '',
+                lead_time: '',
+                agent: '',
+                previous_cancellations: '',
+                deposit_type: "No Deposit"
+            });
         } catch (error) {
             console.error(error.response?.data);
 
@@ -100,37 +104,209 @@ function Predict({ token, onPredictSuccess }) {
         }
     };
 
+    const formatNumber = (value) => {
+        if (!value) return '';
+        // Xóa hết ký tự không phải số
+        const cleanValue = value.toString().replace(/\D/g, '');
+        // Định dạng thêm dấu phẩy hàng nghìn
+        return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    };
+
     return (
-        <div style={{ marginTop: '20px' }}>
-            <form onSubmit={handlePredict} style={{ maxWidth: '400px' }}>
-                <h3>Nhập thông tin đặt phòng</h3>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Lead Time: </label>
-                    <input type="number" value={formData.lead_time} onChange={e => setFormData({ ...formData, lead_time: e.target.value })} />
+        <div style={{
+            marginTop: '30px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            fontFamily: 'Segoe UI, Roboto, sans-serif'
+        }}>
+            <form onSubmit={handlePredict} style={{
+                width: '100%',
+                maxWidth: '450px',
+                padding: '30px',
+                borderRadius: '12px',
+                backgroundColor: '#ffffff',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)',
+                border: '1px solid #eaeaea'
+            }}>
+                <h3 style={{ margin: '0 0 20px 0', color: '#333', textAlign: 'center', fontSize: '22px' }}>
+                    Nhập thông tin đặt phòng
+                </h3>
+
+                {/* Ô nhập Giá 1 đêm */}
+                <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', color: '#555', fontSize: '14px' }}>
+                        Giá 1 đêm (ADR):
+                    </label>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <input
+                            type="text"
+                            value={formatNumber(formData.adr)}
+                            onChange={e => {
+                                // Chỉ giữ lại số khi lưu vào state
+                                const rawValue = e.target.value.replace(/\D/g, '');
+                                setFormData({ ...formData, adr: rawValue });
+                            }}
+                            style={{
+                                width: '100%',
+                                padding: '10px 60px 10px 12px',
+                                borderRadius: '6px',
+                                border: '1px solid #ccc',
+                                fontSize: '15px',
+                                boxSizing: 'border-box',
+                                outline: 'none',
+                                textAlign: 'left'
+                            }}
+                            placeholder="Ví dụ: 456,988"
+                        />
+                        <span style={{
+                            position: 'absolute',
+                            right: '12px',
+                            color: '#888',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            pointerEvents: 'none'
+                        }}>
+                            VNĐ
+                        </span>
+                    </div>
                 </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Lead Time: </label>
-                    <input type="number" value={formData.lead_time} onChange={e => setFormData({ ...formData, lead_time: e.target.value })} />
+
+                {/* Ô nhập Số ngày đặt trước */}
+                <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', color: '#555', fontSize: '14px' }}>
+                        Số ngày đặt trước (Lead Time):
+                    </label>
+                    <input
+                        type="number"
+                        value={formData.lead_time}
+                        onChange={e => setFormData({ ...formData, lead_time: e.target.value })}
+                        style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid #ccc',
+                            fontSize: '15px',
+                            boxSizing: 'border-box',
+                            outline: 'none'
+                        }}
+                        placeholder="Ví dụ: 45"
+                    />
                 </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Lead Time: </label>
-                    <input type="number" value={formData.lead_time} onChange={e => setFormData({ ...formData, lead_time: e.target.value })} />
+
+                {/* Ô nhập Mã đại lý */}
+                <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', color: '#555', fontSize: '14px' }}>
+                        Mã đại lý (Agent):
+                    </label>
+                    <input
+                        type="number"
+                        value={formData.agent}
+                        onChange={e => setFormData({ ...formData, agent: e.target.value })}
+                        style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid #ccc',
+                            fontSize: '15px',
+                            boxSizing: 'border-box',
+                            outline: 'none'
+                        }}
+                        placeholder="Ví dụ: 9"
+                    />
                 </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Special Requests: </label>
-                    <input type="number" value={formData.total_of_special_requests} onChange={e => setFormData({ ...formData, total_of_special_requests: e.target.value })} />
+
+                {/* Ô nhập Số lần đã hủy */}
+                <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', color: '#555', fontSize: '14px' }}>
+                        Số lần đã hủy trước đó:
+                    </label>
+                    <input
+                        type="number"
+                        value={formData.previous_cancellations}
+                        onChange={e => setFormData({ ...formData, previous_cancellations: e.target.value })}
+                        style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid #ccc',
+                            fontSize: '15px',
+                            boxSizing: 'border-box',
+                            outline: 'none'
+                        }}
+                        placeholder="Ví dụ: 0"
+                    />
                 </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Parking Spaces: </label>
-                    <input type="number" value={formData.required_car_parking_spaces} onChange={e => setFormData({ ...formData, required_car_parking_spaces: e.target.value })} />
+
+                {/* Hộp chọn Loại đặt cọc */}
+                <div style={{ marginBottom: '25px' }}>
+                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', color: '#555', fontSize: '14px' }}>
+                        Loại đặt cọc (Deposit Type):
+                    </label>
+                    <select
+                        name="deposit_type"
+                        value={formData.deposit_type || "No Deposit"}
+                        onChange={e => setFormData({ ...formData, deposit_type: e.target.value })}
+                        style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid #ccc',
+                            fontSize: '15px',
+                            backgroundColor: '#fff',
+                            boxSizing: 'border-box',
+                            outline: 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <option value="No Deposit">No Deposit (Không đặt cọc)</option>
+                        <option value="Non Refund">Non Refund (Không hoàn lại)</option>
+                        <option value="Refundable">Refundable (Có thể hoàn lại)</option>
+                    </select>
                 </div>
-                <button type="submit" style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px' }}>Dự đoán</button>
+
+                {/* Nút bấm */}
+                <button
+                    type="submit"
+                    style={{
+                        width: '100%',
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        padding: '12px',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 5px rgba(40, 167, 69, 0.2)',
+                        transition: 'background-color 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#218838'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#28a745'}
+                >
+                    Phân Tích Bằng AI
+                </button>
             </form>
 
+            {/* Khung hiển thị kết quả */}
             {result && (
-                <div style={{ marginTop: '10px', padding: '10px', background: '#eee' }}>
-                    <h4>Kết quả AI:</h4>
-                    <p>Dự báo: <strong>{result.is_canceled === 1 ? "HỦY PHÒNG" : "AN TOÀN"}</strong></p>
+                <div style={{
+                    marginTop: '20px',
+                    width: '100%',
+                    maxWidth: '450px',
+                    padding: '15px 20px',
+                    borderRadius: '8px',
+                    boxSizing: 'border-box',
+                    textAlign: 'center',
+                    border: '1px solid',
+                    backgroundColor: result.is_canceled === 1 ? '#fdeded' : '#edf7ed',
+                    borderColor: result.is_canceled === 1 ? '#f5c6cb' : '#c3e6cb',
+                    color: result.is_canceled === 1 ? '#721c24' : '#155724'
+                }}>
+                    <h4 style={{ margin: '0 0 5px 0', fontSize: '16px' }}>Kết Quả Phân Tích AI:</h4>
+                    <p style={{ margin: 0, fontSize: '18px' }}>
+                        Trạng thái: <strong>{result.is_canceled === 1 ? "⚠️ CÓ NGUY CƠ HỦY PHÒNG" : "✅ KHÁCH SẼ ĐẾN NHẬN"}</strong>
+                    </p>
                 </div>
             )}
         </div>

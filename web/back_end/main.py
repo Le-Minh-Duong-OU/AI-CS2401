@@ -52,37 +52,40 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 # --- Pydantic Schema định nghĩa 29 trường dữ liệu đầu vào giống hệt ảnh của bạn ---
 class BookingInput(BaseModel):
-    hotel: str = Field(..., description="Loại khách sạn (City Hotel / Resort Hotel)")
-    lead_time: int = Field(..., description="Số ngày từ lúc đặt phòng đến ngày nhận phòng")
-    arrival_date_year: int = Field(..., description="Năm nhận phòng")
-    arrival_date_month: str = Field(..., description="Tháng nhận phòng")
-    arrival_date_week_number: int = Field(..., description="Tuần đến trong năm")
-    arrival_date_day_of_month: int = Field(..., description="Ngày đến trong tháng")
-    stays_in_weekend_nights: int = Field(..., description="Lưu trú vào các đêm cuối tuần")
-    stays_in_week_nights: int = Field(..., description="Lưu trú vào các đêm trong tuần")
-    adults: int = Field(..., description="Số lượng khách người lớn")
-    children: float = Field(0.0, description="Số lượng khách trẻ em")
-    babies: int = Field(0, description="Số lượng khách trẻ sơ sinh")
-    meal: str = Field(..., description="Gói dịch vụ ăn uống đã đặt")
-    country: str = Field(..., description="Mã quốc gia của khách (mã ISO)")
-    market_segment: str = Field(..., description="Phân khúc thị trường")
-    distribution_channel: str = Field(..., description="Kênh phân phối")
-    is_repeated_guest: int = Field(..., description="Khách có phải khách quen hay không (0/1)")
-    previous_cancellations: int = Field(..., description="Lịch sử hủy trước đó của khách")
-    previous_bookings_not_canceled: int = Field(..., description="Lịch sử đặt phòng thành công trước đó")
-    reserved_room_type: str = Field(..., description="Loại phòng đã đặt")
-    assigned_room_type: str = Field(..., description="Loại phòng được chỉ định")
-    booking_changes: int = Field(..., description="Thay đổi đặt chỗ")
-    deposit_type: str = Field(..., description="Loại đặt cọc")
-    agent: Optional[float] = Field(None, description="Mã đại lý")
-    company: Optional[float] = Field(None, description="Công ty trung gian đặt phòng")
-    days_in_waiting_list: int = Field(..., description="Số ngày trong danh sách chờ")
-    customer_type: str = Field(..., description="Loại khách hàng")
+    # hotel: str = Field(..., description="Loại khách sạn (City Hotel / Resort Hotel)")
+    # lead_time: int = Field(..., description="Số ngày từ lúc đặt phòng đến ngày nhận phòng")
+    # arrival_date_year: int = Field(..., description="Năm nhận phòng")
+    # arrival_date_month: str = Field(..., description="Tháng nhận phòng")
+    # arrival_date_week_number: int = Field(..., description="Tuần đến trong năm")
+    # arrival_date_day_of_month: int = Field(..., description="Ngày đến trong tháng")
+    # stays_in_weekend_nights: int = Field(..., description="Lưu trú vào các đêm cuối tuần")
+    # stays_in_week_nights: int = Field(..., description="Lưu trú vào các đêm trong tuần")
+    # adults: int = Field(..., description="Số lượng khách người lớn")
+    # children: float = Field(0.0, description="Số lượng khách trẻ em")
+    # babies: int = Field(0, description="Số lượng khách trẻ sơ sinh")
+    # meal: str = Field(..., description="Gói dịch vụ ăn uống đã đặt")
+    # country: str = Field(..., description="Mã quốc gia của khách (mã ISO)")
+    # market_segment: str = Field(..., description="Phân khúc thị trường")
+    # distribution_channel: str = Field(..., description="Kênh phân phối")
+    # is_repeated_guest: int = Field(..., description="Khách có phải khách quen hay không (0/1)")
+    # previous_cancellations: int = Field(..., description="Lịch sử hủy trước đó của khách")
+    # previous_bookings_not_canceled: int = Field(..., description="Lịch sử đặt phòng thành công trước đó")
+    # reserved_room_type: str = Field(..., description="Loại phòng đã đặt")
+    # assigned_room_type: str = Field(..., description="Loại phòng được chỉ định")
+    # booking_changes: int = Field(..., description="Thay đổi đặt chỗ")
+    # deposit_type: str = Field(..., description="Loại đặt cọc")
+    # agent: Optional[float] = Field(None, description="Mã đại lý")
+    # company: Optional[float] = Field(None, description="Công ty trung gian đặt phòng")
+    # days_in_waiting_list: int = Field(..., description="Số ngày trong danh sách chờ")
+    # customer_type: str = Field(..., description="Loại khách hàng")
+    # adr: float = Field(..., description="Giá phòng trung bình/đêm")
+    # required_car_parking_spaces: int = Field(..., description="Số chỗ đậu xe bắt buộc")
+    # total_of_special_requests: int = Field(..., description="Tổng số yêu cầu đặc biệt")
     adr: float = Field(..., description="Giá phòng trung bình/đêm")
-    required_car_parking_spaces: int = Field(..., description="Số chỗ đậu xe bắt buộc")
-    total_of_special_requests: int = Field(..., description="Tổng số yêu cầu đặc biệt")
-
-# Cố gắng load model AI (Khi nhóm làm xong bước 5, 6 và nộp file .joblib, hãy để chung vào thư mục này)
+    lead_time: int = Field(..., description="Số ngày từ lúc đặt phòng đến ngày nhận phòng")
+    agent: Optional[float] = Field(None, description="Mã đại lý")
+    previous_cancellations: int = Field(..., description="Lịch sử hủy trước đó của khách")
+    deposit_type: str = Field(..., description="Loại đặt cọc")
 try:
     model = joblib.load("hotel_model.joblib")
 except Exception:
@@ -207,13 +210,21 @@ async def predict_batch(
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Vui lòng dùng file định dạng csv")
     try:
+        print("1")
         contents = await file.read()
-        df = pd.read_csv(io.BytesIO(contents))
+        df = pd.read_csv(io.BytesIO(contents), sep=';', skipinitialspace=True)
 
         required_col = ["adr", "deposit_type", "lead_time", "agent", "previous_cancellations"]
+        print("2")  
+
+        print("Cột đọc được:", df.columns.tolist())
         for col in required_col:
             if col not in df.columns:
                 raise HTTPException(status_code=400, detail="File thiếu thông tin")
+        print("3")
+
+        df['agent'] = df['agent'].fillna('0').astype(str).str.strip()
+        df['agent'] = df['agent'].replace(['NULL', 'null', 'None', 'nan'], '0')
         
         predictions = []
         confidences = []

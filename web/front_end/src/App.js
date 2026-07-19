@@ -3,11 +3,13 @@ import Auth from './components/Auth';
 import Predict from './components/Predict';
 import History from './components/History';
 import BatchPredict from './components/BatchPredict';
+import InfoModel from './components/InfoModel';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [refreshHistory, setRefreshHistory] = useState(0);
   const [activeTab, setActiveTab] = useState('single');
+  const [showInfo, setShowInfo] = useState(false);
   const handleLogout = () => {
     localStorage.removeItem('token');
     setToken('');
@@ -43,7 +45,16 @@ function App() {
         // Nếu đã đăng nhập -> Hiện các chức năng chính
         <div>
           <div style={{ textAlign: 'right' }}>
-            <button onClick={handleLogout} style={{ backgroundColor: '#f44336', color: 'white' }}>Đăng xuất</button>
+            <button onClick={handleLogout} style={{
+              padding: '10px 20px',
+              marginRight: '10px',
+              backgroundColor: '#d80000',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}>Đăng xuất</button>
           </div>
 
           {/* Giao diện Dự đoán */}
@@ -86,6 +97,29 @@ function App() {
           <History token={token} refreshTrigger={refreshHistory} />
         </div>
       )}
+
+      <div style={{ marginTop: '40px', textAlign: 'center' }}>
+        <span
+          onClick={() => setShowInfo(!showInfo)}
+          style={{
+            color: '#007bff',
+            textDecoration: 'underline',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '15px',
+            userSelect: 'none'
+          }}
+        >
+          {showInfo ? "Ẩn thông tin mô hình AI" : "Thông tin thông số mô hình AI"}
+        </span>
+
+        {showInfo && (
+          <div style={{ marginTop: '15px', textAlign: 'left' }}>
+            <InfoModel token={token} />
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

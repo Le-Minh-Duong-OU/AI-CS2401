@@ -22,40 +22,16 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS prediction_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            hotel TEXT,
-            lead_time INTEGER,
-            arrival_date_year INTEGER,
-            arrival_date_month TEXT,
-            arrival_date_week_number INTEGER,
-            arrival_date_day_of_month INTEGER,
-            stays_in_weekend_nights INTEGER,
-            stays_in_week_nights INTEGER,
-            adults INTEGER,
-            children REAL,
-            babies INTEGER,
-            meal TEXT,
-            country TEXT,
-            market_segment TEXT,
-            distribution_channel TEXT,
-            is_repeated_guest INTEGER,
-            previous_cancellations INTEGER,
-            previous_bookings_not_canceled INTEGER,
-            reserved_room_type TEXT,
-            assigned_room_type TEXT,
-            booking_changes INTEGER,
-            deposit_type TEXT,
-            agent REAL,
-            company REAL,
-            days_in_waiting_list INTEGER,
-            customer_type TEXT,
+            username TEXT,           
             adr REAL,
-            required_car_parking_spaces INTEGER,
-            total_of_special_requests INTEGER,
-            prediction INTEGER,
+            lead_time INTEGER,
+            agent REAL,
+            previous_cancellations INTEGER,
+            deposit_type TEXT,
             confidence REAL,
             timestamp TEXT,
-            actual_status INTEGER
+            actual_status INTEGER,
+            prediction INTEGER
         )
     ''')
     conn.commit()
@@ -68,50 +44,33 @@ def save_prediction(username: str, data: dict, prediction: int, confidence: floa
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     actual_status = -1
     
+    # query = '''
+    #     INSERT INTO prediction_history (
+    #         username, hotel, lead_time, arrival_date_year, arrival_date_month,
+    #         arrival_date_week_number, arrival_date_day_of_month, stays_in_weekend_nights,
+    #         stays_in_week_nights, adults, children, babies, meal, country,
+    #         market_segment, distribution_channel, is_repeated_guest, previous_cancellations,
+    #         previous_bookings_not_canceled, reserved_room_type, assigned_room_type,
+    #         booking_changes, deposit_type, agent, company, days_in_waiting_list,
+    #         customer_type, adr, required_car_parking_spaces, total_of_special_requests,
+    #         prediction, confidence, timestamp, actual_status
+    #     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    # '''
+
     query = '''
         INSERT INTO prediction_history (
-            username, hotel, lead_time, arrival_date_year, arrival_date_month,
-            arrival_date_week_number, arrival_date_day_of_month, stays_in_weekend_nights,
-            stays_in_week_nights, adults, children, babies, meal, country,
-            market_segment, distribution_channel, is_repeated_guest, previous_cancellations,
-            previous_bookings_not_canceled, reserved_room_type, assigned_room_type,
-            booking_changes, deposit_type, agent, company, days_in_waiting_list,
-            customer_type, adr, required_car_parking_spaces, total_of_special_requests,
-            prediction, confidence, timestamp, actual_status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    '''
+            username, adr, lead_time, agent, previous_cancellations, deposit_type, prediction, confidence, timestamp, actual_status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+'''
     
     cursor.execute(query, (
+       
         username,
-        data.get("hotel"),
-        data.get("lead_time"),
-        data.get("arrival_date_year"),
-        data.get("arrival_date_month"),
-        data.get("arrival_date_week_number"),
-        data.get("arrival_date_day_of_month"),
-        data.get("stays_in_weekend_nights"),
-        data.get("stays_in_week_nights"),
-        data.get("adults"),
-        data.get("children"),
-        data.get("babies"),
-        data.get("meal"),
-        data.get("country"),
-        data.get("market_segment"),
-        data.get("distribution_channel"),
-        data.get("is_repeated_guest"),
-        data.get("previous_cancellations"),
-        data.get("previous_bookings_not_canceled"),
-        data.get("reserved_room_type"),
-        data.get("assigned_room_type"),
-        data.get("booking_changes"),
-        data.get("deposit_type"),
-        data.get("agent"),
-        data.get("company"),
-        data.get("days_in_waiting_list"),
-        data.get("customer_type"),
         data.get("adr"),
-        data.get("required_car_parking_spaces"),
-        data.get("total_of_special_requests"),
+        data.get("lead_time"),
+        data.get("agent"),
+        data.get("previous_cancellations"),
+        data.get("deposit_type"),
         prediction,
         confidence,
         timestamp,
@@ -150,3 +109,93 @@ def update_status(record_id: int, actual_status: int):
 
 # Tự động khởi chạy tạo bảng ngay khi import file này lần đầu
 init_db()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # hotel TEXT,
+            # lead_time INTEGER,
+            # arrival_date_year INTEGER,
+            # arrival_date_month TEXT,
+            # arrival_date_week_number INTEGER,
+            # arrival_date_day_of_month INTEGER,
+            # stays_in_weekend_nights INTEGER,
+            # stays_in_week_nights INTEGER,
+            # adults INTEGER,
+            # children REAL,
+            # babies INTEGER,
+            # meal TEXT,
+            # country TEXT,
+            # market_segment TEXT,
+            # distribution_channel TEXT,
+            # is_repeated_guest INTEGER,
+            # previous_cancellations INTEGER,
+            # previous_bookings_not_canceled INTEGER,
+            # reserved_room_type TEXT,
+            # assigned_room_type TEXT,
+            # booking_changes INTEGER,
+            # deposit_type TEXT,
+            # agent REAL,
+            # company REAL,
+            # days_in_waiting_list INTEGER,
+            # customer_type TEXT,
+            # adr REAL,
+            # required_car_parking_spaces INTEGER,
+            # total_of_special_requests INTEGER,
+            # prediction INTEGER,
+            # confidence REAL,
+            # timestamp TEXT,
+            # actual_status INTEGER,
+
+        # username,
+        # data.get("hotel"),
+        # data.get("lead_time"),
+        # data.get("arrival_date_year"),
+        # data.get("arrival_date_month"),
+        # data.get("arrival_date_week_number"),
+        # data.get("arrival_date_day_of_month"),
+        # data.get("stays_in_weekend_nights"),
+        # data.get("stays_in_week_nights"),
+        # data.get("adults"),
+        # data.get("children"),
+        # data.get("babies"),
+        # data.get("meal"),
+        # data.get("country"),
+        # data.get("market_segment"),
+        # data.get("distribution_channel"),
+        # data.get("is_repeated_guest"),
+        # data.get("previous_cancellations"),
+        # data.get("previous_bookings_not_canceled"),
+        # data.get("reserved_room_type"),
+        # data.get("assigned_room_type"),
+        # data.get("booking_changes"),
+        # data.get("deposit_type"),
+        # data.get("agent"),
+        # data.get("company"),
+        # data.get("days_in_waiting_list"),
+        # data.get("customer_type"),
+        # data.get("adr"),
+        # data.get("required_car_parking_spaces"),
+        # data.get("total_of_special_requests"),
+        # prediction,
+        # confidence,
+        # timestamp,
+        # actual_status

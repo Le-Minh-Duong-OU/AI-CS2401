@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = "http://127.0.0.1:8000";
+import api from '../api';
 
 function BatchPredict({ token, onAuthError }) {
     const [file, setFile] = useState(null);
@@ -24,18 +22,13 @@ function BatchPredict({ token, onAuthError }) {
         setMessage('Đang xử lý dự đoán hàng loạt...');
 
         const formData = new FormData();
+        console.log(formData)
         formData.append("file", file);
 
         try {
-            const config = {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
-                },
-                responseType: 'blob' //Nhận file trước
-            };
 
-            const response = await axios.post(`${API_BASE_URL}/predict-batch`, formData, config);
+            
+            const response = await api.post(`/predict-batch`, formData, { responseType: 'blob' });
 
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
