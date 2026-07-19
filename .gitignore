@@ -24,3 +24,11 @@ TestResults.xml
 #Vs Code
 /.vscode
 /.vsconfig
+
+# W&B
+wandb/
+Analysis/wandb/
+
+# Python
+__pycache__/
+*.pyc
