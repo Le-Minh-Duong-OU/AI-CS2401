@@ -7,11 +7,14 @@
 # python -m pip install pandas numpy matplotlib seaborn
 #python -m pip install scikit-learn
 
+
+
 import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import wandb
 
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
@@ -827,3 +830,532 @@ Feature Selection on TRAIN only
 """)
 
 print("Hoàn thành kiểm tra Data Leakage!")
+
+
+# ==========================================================
+# CHAPTER 5 - MODEL TRAINING
+# ==========================================================
+print("\n" + "=" * 80)
+print("CHAPTER 5 - MODEL TRAINING")
+print("=" * 80)
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.metrics import (
+
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    classification_report
+)
+wandb.login(force=True)
+wandb.init(
+    project="hotel-booking-demand",
+    name="baseline-models-experiment",
+    config={
+        "test_size": 0.20,
+        "random_state": 42,
+        "lr_max_iter": 1000,
+        "rf_n_estimators": 100,
+        "rf_max_depth": 10
+    }
+)
+
+print("\n" + "=" * 80)
+print("CHAPTER 5 - MODEL TRAINING (W&B Tracking Enabled)")
+print("=" * 80)
+
+# ==========================================================
+# 5.1 Logistic Regression
+# ==========================================================
+
+print("\nTraining Logistic Regression...")
+
+lr = LogisticRegression(
+    max_iter=1000,
+    class_weight="balanced",
+    random_state=42
+)
+
+lr.fit(X_train_processed, y_train)
+
+# ==========================================================
+# 5.2 Random Forest - Manual Hyperparameters
+# ==========================================================
+
+print("\nTraining Random Forest...")
+
+rf = RandomForestClassifier(
+    n_estimators=100,
+    max_depth=10,
+    class_weight="balanced",
+    random_state=42,
+    n_jobs=-1
+)
+
+rf.fit(X_train_processed, y_train)
+
+print("Random Forest Training Completed!")
+
+# ==========================================================
+# 5.3 Gradient Boosting
+# ==========================================================
+
+print("\nTraining Gradient Boosting...")
+
+gb = GradientBoostingClassifier(
+    random_state=42
+)
+
+gb.fit(
+    X_train_processed,
+    y_train
+)
+
+# ==========================================================
+# Evaluation Function
+# ==========================================================
+
+def evaluate_model(model,name):
+
+    prediction = model.predict(X_test_processed)
+
+    probability = model.predict_proba(
+        X_test_processed
+    )[:,1]
+
+    result = {
+
+        "Model":name,
+
+        "Accuracy":
+        accuracy_score(
+            y_test,
+            prediction
+        ),
+
+        "Precision":
+        precision_score(
+            y_test,
+            prediction
+        ),
+
+        "Recall":
+        recall_score(
+            y_test,
+            prediction
+        ),
+
+        "F1-score":
+        f1_score(
+            y_test,
+            prediction
+        ),
+
+        "ROC-AUC":
+        roc_auc_score(
+            y_test,
+            probability
+        )
+
+    }
+
+    print("\n")
+    print("="*60)
+    print(name)
+    print("="*60)
+
+    print(
+        classification_report(
+            y_test,
+            prediction
+        )
+    )
+
+    return result,prediction,probability
+
+results=[]
+
+lr_result,lr_pred,lr_prob = evaluate_model(
+    lr,
+    "Logistic Regression"
+)
+
+rf_result,rf_pred,rf_prob = evaluate_model(
+    rf,
+    "Random Forest"
+)
+
+gb_result,gb_pred,gb_prob = evaluate_model(
+    gb,
+    "Gradient Boosting"
+)
+
+results.append(lr_result)
+results.append(rf_result)
+results.append(gb_result)
+
+result_df = pd.DataFrame(results)
+
+print("\n")
+print("="*80)
+print("MODEL COMPARISON")
+print("="*80)
+
+print(result_df)
+
+wandb.log({"Model_Comparison_Table": wandb.Table(dataframe=result_df)})
+
+result_df.to_csv(
+    "Table_5_1_Model_Result.csv",
+    index=False
+)
+
+print("\nSaved: Table_5_1_Model_Result.csv")
+
+# ==========================================================
+# CHAPTER 6 - MODEL EVALUATION
+# ==========================================================
+
+print("\n" + "=" * 80)
+print("CHAPTER 6 - MODEL EVALUATION")
+print("=" * 80)
+
+from sklearn.metrics import (
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+    RocCurveDisplay
+)
+
+# ==========================================================
+# Select Best Model
+# ==========================================================
+
+models = {
+    "Logistic Regression": (lr, lr_pred, lr_prob),
+    "Random Forest": (rf, rf_pred, rf_prob),
+    "Gradient Boosting": (gb, gb_pred, gb_prob)
+}
+
+best_index = result_df["F1-score"].idxmax()
+
+best_name = result_df.loc[best_index, "Model"]
+
+best_model, best_pred, best_prob = models[best_name]
+
+print(f"\nBest Model: {best_name}")
+
+# ==========================================================
+# Confusion Matrix
+# ==========================================================
+
+plt.figure(figsize=(6,6))
+
+
+ConfusionMatrixDisplay.from_predictions(
+    y_test,
+    best_pred,
+    cmap="Blues",
+    ax=plt.gca()
+)
+
+plt.title(f"Confusion Matrix - {best_name}")
+
+plt.savefig(
+    "Figure_6_1_ConfusionMatrix.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+wandb.log({"Confusion_Matrix": wandb.Image(plt.gcf())})
+plt.show()
+
+# ==========================================================
+# ROC Curve
+# ==========================================================
+
+plt.figure(figsize=(6,6))
+
+RocCurveDisplay.from_predictions(
+    y_test,
+    best_prob,
+    name=best_name,
+    ax=plt.gca()
+)
+
+plt.plot([0,1],[0,1],'k--')
+
+plt.title("ROC Curve")
+
+plt.savefig(
+    "Figure_6_2_ROC.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+wandb.log({"ROC_Curve": wandb.Image(plt.gcf())})
+plt.show()
+
+# ==========================================================
+# Feature Importance
+# ==========================================================
+
+print("\nGenerating Feature Importance...")
+
+if hasattr(best_model, "feature_importances_"):
+
+    # Trích xuất chính xác tên cột từ bộ preprocessor
+    raw_names = preprocessor.get_feature_names_out()
+    # Làm sạch tiền tố 'numeric__' và 'categorical__' để hiển thị đẹp hơn
+    clean_names = [name.split('__')[-1] for name in raw_names]
+
+    importance = best_model.feature_importances_
+
+    importance_df = pd.DataFrame({
+        "Feature": clean_names,
+        "Importance": importance
+    })
+
+    importance_df = importance_df.sort_values(
+        by="Importance",
+        ascending=False
+    )
+
+    print("\nTop 10 Important Features")
+    print(importance_df.head(10).to_string(index=False))
+
+    plt.figure(figsize=(10, 6))
+    import seaborn as sns
+    sns.barplot(
+        x=importance_df.head(10)["Importance"],
+        y=importance_df.head(10)["Feature"],
+        palette="viridis"
+    )
+
+    plt.title(f"Top 10 Important Features - {best_name}", fontsize=13, fontweight='bold')
+    plt.xlabel("Importance Score")
+    plt.ylabel("Features")
+    plt.tight_layout()
+
+    plt.savefig(
+        "Figure_6_3_FeatureImportance.png",
+        dpi=300
+    )
+    wandb.log({"Feature_Importance": wandb.Image(plt.gcf())})
+    plt.show()
+
+else:
+
+    print("Model does not support feature importance.")
+
+# ==========================================================
+# Save Classification Report
+# ==========================================================
+
+report = classification_report(
+    y_test,
+    best_pred,
+    output_dict=True
+)
+
+report_df = pd.DataFrame(report).transpose()
+
+report_df.to_csv(
+    "Classification_Report.csv"
+)
+
+print("\nSaved: Classification_Report.csv")
+
+# ==========================================================
+# Error Analysis
+# ==========================================================
+
+error_df = pd.DataFrame()
+
+error_df["Actual"] = y_test.reset_index(drop=True)
+
+error_df["Prediction"] = best_pred
+
+error_df["Correct"] = (
+    error_df["Actual"] ==
+    error_df["Prediction"]
+)
+
+errors = error_df[
+    error_df["Correct"] == False
+]
+
+print("\nTotal Wrong Predictions :", len(errors))
+
+print(errors.head(10))
+
+errors.to_csv(
+    "Prediction_Error.csv",
+    index=False
+)
+
+print("Saved: Prediction_Error.csv")
+
+# ==========================================================
+# Final Result
+# ==========================================================
+
+print("\n" + "="*80)
+print("EXPERIMENT COMPLETED")
+print("="*80)
+
+print(result_df)
+
+print("\nGenerated Files")
+
+print("1. Table_5_1_Model_Result.csv")
+print("2. Classification_Report.csv")
+print("3. Prediction_Error.csv")
+print("4. Figure_6_1_ConfusionMatrix.png")
+print("5. Figure_6_2_ROC.png")
+print("6. Figure_6_3_FeatureImportance.png")
+# ==========================================================
+# EXTRA - MODEL COMPARISON
+# ==========================================================
+
+print("\n" + "="*80)
+print("MODEL COMPARISON")
+print("="*80)
+
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve
+
+# ----------------------------------------------------------
+# ROC Curve Comparison
+# ----------------------------------------------------------
+
+plt.figure(figsize=(8,6))
+
+models = [
+    ("Logistic Regression", lr, lr_prob),
+    ("Random Forest", rf, rf_prob),
+    ("Gradient Boosting", gb, gb_prob)
+]
+
+for name, model, prob in models:
+
+    fpr, tpr, _ = roc_curve(y_test, prob)
+
+    auc = roc_auc_score(y_test, prob)
+
+    plt.plot(
+        fpr,
+        tpr,
+        linewidth=2,
+        label=f"{name} (AUC = {auc:.3f})"
+    )
+
+plt.plot([0,1],[0,1],'k--')
+
+plt.xlabel("False Positive Rate")
+
+plt.ylabel("True Positive Rate")
+
+plt.title("ROC Curve Comparison")
+
+plt.legend()
+
+plt.grid(True)
+
+plt.tight_layout()
+
+plt.savefig(
+    "Figure_6_4_ROC_Comparison.png",
+    dpi=300
+)
+
+plt.show()
+
+print("Saved : Figure_6_4_ROC_Comparison.png")
+
+# ----------------------------------------------------------
+# Beautiful Result Table
+# ----------------------------------------------------------
+
+result_df = result_df.copy()
+
+for col in [
+    "Accuracy",
+    "Precision",
+    "Recall",
+    "F1-score",
+    "ROC-AUC"
+]:
+    result_df[col] = result_df[col].round(4)
+
+result_df = result_df.sort_values(
+    by="F1-score",
+    ascending=False
+).reset_index(drop=True)
+
+print("\n")
+print(result_df)
+
+
+result_df.to_csv("Table_5_2_Model_Comparison.csv", index=False)
+
+print("Saved : Table_5_2_Model_Comparison.csv")
+
+# ----------------------------------------------------------
+# Best Model
+# ----------------------------------------------------------
+
+best_model_name = result_df.iloc[0]["Model"]
+
+best_f1 = result_df.iloc[0]["F1-score"]
+
+best_auc = result_df.iloc[0]["ROC-AUC"]
+
+print("\n")
+print("="*60)
+print("BEST MODEL")
+print("="*60)
+
+print(f"Model : {best_model_name}")
+print(f"F1-score : {best_f1}")
+print(f"ROC-AUC : {best_auc}")
+
+# ----------------------------------------------------------
+# Summary
+# ----------------------------------------------------------
+
+summary = pd.DataFrame({
+
+    "Metric":[
+        "Accuracy",
+        "Precision",
+        "Recall",
+        "F1-score",
+        "ROC-AUC"
+    ],
+
+    "Value":[
+        result_df.iloc[0]["Accuracy"],
+        result_df.iloc[0]["Precision"],
+        result_df.iloc[0]["Recall"],
+        result_df.iloc[0]["F1-score"],
+        result_df.iloc[0]["ROC-AUC"]
+    ]
+
+})
+
+summary.to_csv(
+    "Best_Model_Result.csv",
+    index=False
+)
+
+print("Saved : Best_Model_Result.csv")
+
+print("\n")
+print("="*80)
+print("ALL TASKS COMPLETED")
+print("="*80)
+wandb.finish()
