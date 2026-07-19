@@ -1,0 +1,47 @@
+Metadata-Version: 2.1
+Name: passlib-fork
+Version: 1.7.4.post2
+Summary: comprehensive password hashing framework supporting over 30 schemes
+Keywords: password secret hash security
+        crypt md5-crypt
+        sha256-crypt sha512-crypt pbkdf2 argon2 scrypt bcrypt
+        apache htpasswd htdigest
+        totp 2fa
+Author-Email: Eli Collins <elic@assurancetechnologies.com>
+License: BSD
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: Jython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Topic :: Security :: Cryptography
+Classifier: Topic :: Software Development :: Libraries
+Project-URL: Homepage, https://github.com/Yolley/passlib-fork
+Requires-Python: >=3.10
+Provides-Extra: argon2
+Provides-Extra: bcrypt
+Provides-Extra: totp
+Provides-Extra: build_docs
+Requires-Dist: argon2_cffi>=18.2.0; extra == "argon2"
+Requires-Dist: bcrypt>=3.1.0; extra == "bcrypt"
+Requires-Dist: cryptography; extra == "totp"
+Requires-Dist: cloud_sptheme>=1.10.1; extra == "build-docs"
+Requires-Dist: sphinx>=1.6; extra == "build-docs"
+Requires-Dist: sphinxcontrib-fulltoc>=1.2.0; extra == "build-docs"
