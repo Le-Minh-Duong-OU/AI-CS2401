@@ -38,7 +38,7 @@ function InfoModel() {
                     </div>
                     <div style={{ background: '#fff', padding: '12px', borderRadius: '8px', border: '1px solid #dee2e6' }}>
                         <span style={{ fontSize: '12px', color: '#6c757d', display: 'block' }}>Độ chính xác mô hình (Accuracy)</span>
-                        <strong style={{ fontSize: '15px', color: '#ffc107' }}>~ 85.4%</strong>
+                        <strong style={{ fontSize: '15px', color: '#ffc107' }}></strong>
                     </div>
                 </div>
 

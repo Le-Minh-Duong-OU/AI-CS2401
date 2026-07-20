@@ -1,5 +1,6 @@
  pip install -r requirements.txt
  
+ mở terminal
  cd back_end
  uvicorn main:app   
 

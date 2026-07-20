@@ -3,35 +3,6 @@ import api from '../api';
 
 function Predict({ token, onPredictSuccess }) {
     const [formData, setFormData] = useState({
-        // hotel: '',
-        // lead_time: 0,
-        // arrival_date_year: 0,
-        // arrival_date_month: '',
-        // arrival_date_week_number: 0,
-        // arrival_date_day_of_month: 0,
-        // stays_in_weekend_nights: 0,
-        // stays_in_week_nights: 0,
-        // adults: 0,
-        // children: 0,
-        // babies: 0,
-        // meal: '',
-        // country: '',
-        // market_segment: '',
-        // distribution_channel: '',
-        // is_repeated_guest: 0,
-        // previous_cancellations: 0,
-        // previous_bookings_not_canceled: 0,
-        // reserved_room_type: '',
-        // assigned_room_type: '',
-        // booking_changes: 0,
-        // deposit_type: '',
-        // agent: 0,
-        // company: 0,
-        // days_in_waiting_list: 0,
-        // customer_type: '',
-        // adr: 0,
-        // required_car_parking_spaces: 0,
-        // total_of_special_requests: 0
         adr: '',
         lead_time: '',
         agent: '',
@@ -44,16 +15,15 @@ function Predict({ token, onPredictSuccess }) {
         e.preventDefault();
 
         try {
-            // Gửi đủ 28 trường về Backend (5 trường lấy từ form + 23 trường gán mặc định)
+            // Gửi đủ 28 trường về Backend
             const dataToSend = {
-                // 1. 5 trường lấy từ Form nhập liệu của người dùng
                 adr: formData.adr ? parseFloat(formData.adr.toString().replace(/,/g, '')) : 0,
                 lead_time: formData.lead_time ? parseInt(formData.lead_time) : 0,
                 agent: formData.agent ? parseFloat(formData.agent) : 0,
                 previous_cancellations: formData.previous_cancellations ? parseInt(formData.previous_cancellations) : 0,
                 deposit_type: formData.deposit_type || "No Deposit",
 
-                // 2. 23 trường mặc định bổ sung cho đủ Schema Backend yêu cầu
+                // 23 trường mặc định
                 hotel: "City Hotel",
                 arrival_date_year: 2026,
                 arrival_date_month: "August",
@@ -84,7 +54,6 @@ function Predict({ token, onPredictSuccess }) {
             const response = await api.post(`/predict`, dataToSend);
             setResult(response.data);
 
-            // Báo cho component cha cập nhật lịch sử
             if (onPredictSuccess) onPredictSuccess();
 
             // Reset form
@@ -103,11 +72,22 @@ function Predict({ token, onPredictSuccess }) {
 
     const formatNumber = (value) => {
         if (!value) return '';
-        // Xóa hết ký tự không phải số
         const cleanValue = value.toString().replace(/\D/g, '');
-        // Định dạng thêm dấu phẩy hàng nghìn
         return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
+
+    // Hàm lấy giá trị độ tin cậy an toàn từ response backend
+    // Backend thường trả về confidence / probability (ví dụ: 0.88 hoặc 88)
+    const getConfidenceScore = () => {
+        if (!result) return 0;
+        const rawScore = result.confidence ?? result.probability ?? result.score ?? 0;
+        // Nếu giá trị <= 1 (ví dụ 0.8521) thì nhân 100, còn lại giữ nguyên
+        const percentage = rawScore <= 1 ? rawScore * 100 : rawScore;
+        return Math.round(percentage * 10) / 10; // Làm tròn 1 chữ số thập phân
+    };
+
+    const confidenceScore = getConfidenceScore();
+    const isCanceled = result?.is_canceled === 1;
 
     return (
         <div style={{
@@ -140,7 +120,6 @@ function Predict({ token, onPredictSuccess }) {
                             type="text"
                             value={formatNumber(formData.adr)}
                             onChange={e => {
-                                // Chỉ giữ lại số khi lưu vào state
                                 const rawValue = e.target.value.replace(/\D/g, '');
                                 setFormData({ ...formData, adr: rawValue });
                             }}
@@ -285,25 +264,52 @@ function Predict({ token, onPredictSuccess }) {
                 </button>
             </form>
 
-            {/* Khung hiển thị kết quả */}
+            {/* Khung hiển thị kết quả bao gồm Độ tin cậy */}
             {result && (
                 <div style={{
                     marginTop: '20px',
                     width: '100%',
                     maxWidth: '450px',
-                    padding: '15px 20px',
+                    padding: '20px',
                     borderRadius: '8px',
                     boxSizing: 'border-box',
                     textAlign: 'center',
                     border: '1px solid',
-                    backgroundColor: result.is_canceled === 1 ? '#fdeded' : '#edf7ed',
-                    borderColor: result.is_canceled === 1 ? '#f5c6cb' : '#c3e6cb',
-                    color: result.is_canceled === 1 ? '#721c24' : '#155724'
+                    backgroundColor: isCanceled ? '#fdeded' : '#edf7ed',
+                    borderColor: isCanceled ? '#f5c6cb' : '#c3e6cb',
+                    color: isCanceled ? '#721c24' : '#155724'
                 }}>
-                    <h4 style={{ margin: '0 0 5px 0', fontSize: '16px' }}>Kết Quả Phân Tích AI:</h4>
-                    <p style={{ margin: 0, fontSize: '18px' }}>
-                        Trạng thái: <strong>{result.is_canceled === 1 ? "⚠️ CÓ NGUY CƠ HỦY PHÒNG" : "✅ KHÁCH SẼ ĐẾN NHẬN"}</strong>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Kết Quả Phân Tích AI
+                    </h4>
+
+                    <p style={{ margin: '0 0 12px 0', fontSize: '18px' }}>
+                        Trạng thái: <strong>{isCanceled ? "⚠️ CÓ NGUY CƠ HỦY PHÒNG" : "✅ KHÁCH SẼ ĐẾN NHẬN"}</strong>
                     </p>
+
+                    {/* Hiển thị % Độ tin cậy */}
+                    <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed rgba(0,0,0,0.15)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '6px', fontWeight: '600' }}>
+                            <span>Độ tin cậy:</span>
+                            <span>{confidenceScore}%</span>
+                        </div>
+
+                        {/* Thanh Progress Bar trực quan */}
+                        <div style={{
+                            width: '100%',
+                            height: '8px',
+                            backgroundColor: 'rgba(0,0,0,0.1)',
+                            borderRadius: '4px',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{
+                                width: `${confidenceScore}%`,
+                                height: '100%',
+                                backgroundColor: isCanceled ? '#dc3545' : '#28a745',
+                                transition: 'width 0.5s ease-in-out'
+                            }} />
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
