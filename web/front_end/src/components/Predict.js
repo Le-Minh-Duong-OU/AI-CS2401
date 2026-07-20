@@ -44,52 +44,50 @@ function Predict({ token, onPredictSuccess }) {
         e.preventDefault();
 
         try {
-
-            console.log(formData)
+            // Gửi đủ 28 trường về Backend (5 trường lấy từ form + 23 trường gán mặc định)
             const dataToSend = {
-                // hotel: formData.hotel,
-                // lead_time: Number(formData.lead_time),
-                // arrival_date_year: Number(formData.arrival_date_year),
-                // arrival_date_month: formData.arrival_date_month,
-                // arrival_date_week_number: Number(formData.arrival_date_week_number),
-                // arrival_date_day_of_month: Number(formData.arrival_date_day_of_month),
-                // stays_in_weekend_nights: Number(formData.stays_in_weekend_nights),
-                // stays_in_week_nights: Number(formData.stays_in_week_nights),
-                // adults: Number(formData.adults),
-                // children: Number(formData.children),
-                // babies: Number(formData.babies),
-                // meal: formData.meal,
-                // country: formData.country,
-                // market_segment: formData.market_segment,
-                // distribution_channel: formData.distribution_channel,
-                // is_repeated_guest: Number(formData.is_repeated_guest),
-                // previous_cancellations: Number(formData.previous_cancellations),
-                // previous_bookings_not_canceled: Number(formData.previous_bookings_not_canceled),
-                // reserved_room_type: formData.reserved_room_type,
-                // assigned_room_type: formData.assigned_room_type,
-                // booking_changes: Number(formData.booking_changes),
-                // deposit_type: formData.deposit_type,
-                // agent: Number(formData.agent),
-                // company: Number(formData.company),
-                // days_in_waiting_list: Number(formData.days_in_waiting_list),
-                // customer_type: formData.customer_type,
-                // adr: Number(formData.adr),
-                // required_car_parking_spaces: Number(formData.required_car_parking_spaces),
-                // total_of_special_requests: Number(formData.total_of_special_requests)
+                // 1. 5 trường lấy từ Form nhập liệu của người dùng
                 adr: formData.adr ? parseFloat(formData.adr.toString().replace(/,/g, '')) : 0,
                 lead_time: formData.lead_time ? parseInt(formData.lead_time) : 0,
-                agent: formData.agent ? parseInt(formData.agent) : 0,
+                agent: formData.agent ? parseFloat(formData.agent) : 0,
                 previous_cancellations: formData.previous_cancellations ? parseInt(formData.previous_cancellations) : 0,
-                deposit_type: formData.deposit_type,
-            };
-            console.log(dataToSend)
-            const response = await api.post(`/predict`, dataToSend);
-            console.log("await")
+                deposit_type: formData.deposit_type || "No Deposit",
 
+                // 2. 23 trường mặc định bổ sung cho đủ Schema Backend yêu cầu
+                hotel: "City Hotel",
+                arrival_date_year: 2026,
+                arrival_date_month: "August",
+                arrival_date_week_number: 33,
+                arrival_date_day_of_month: 15,
+                stays_in_weekend_nights: 0,
+                stays_in_week_nights: 1,
+                adults: 2,
+                children: 0.0,
+                babies: 0.0,
+                meal: "BB",
+                country: "PRT",
+                market_segment: "Online TA",
+                distribution_channel: "TA/TO",
+                is_repeated_guest: 0,
+                previous_bookings_not_canceled: 0,
+                reserved_room_type: "A",
+                booking_changes: 0,
+                company: 0.0,
+                days_in_waiting_list: 0,
+                customer_type: "Transient",
+                required_car_parking_spaces: 0,
+                total_of_special_requests: 0
+            };
+
+            console.log("Data sending to backend:", dataToSend);
+
+            const response = await api.post(`/predict`, dataToSend);
             setResult(response.data);
 
-            // Nếu dự đoán thành công, báo cho file cha biết để cập nhật lại lịch sử (nếu cần)
+            // Báo cho component cha cập nhật lịch sử
             if (onPredictSuccess) onPredictSuccess();
+
+            // Reset form
             setFormData({
                 adr: '',
                 lead_time: '',
@@ -98,9 +96,8 @@ function Predict({ token, onPredictSuccess }) {
                 deposit_type: "No Deposit"
             });
         } catch (error) {
-            console.error(error.response?.data);
-
-            alert("Lỗi 422 hoặc lỗi hệ thống! Kiểm tra console.");
+            console.error("Predict Error:", error.response?.data || error.message);
+            alert("Có lỗi xảy ra khi gọi API dự đoán! Xem console để biết chi tiết.");
         }
     };
 

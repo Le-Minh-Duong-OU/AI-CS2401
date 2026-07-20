@@ -19,7 +19,7 @@ function InfoModel() {
                 boxSizing: 'border-box'
             }}>
                 <h3 style={{ margin: '0 0 15px 0', color: '#333', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    📊 Thông Tin Mô Hình Học Máy (AI Model Info)
+                    Thông Tin Mô Hình Học Máy (AI Model Info)
                 </h3>
 
                 <div style={{
@@ -30,7 +30,7 @@ function InfoModel() {
                 }}>
                     <div style={{ background: '#fff', padding: '12px', borderRadius: '8px', border: '1px solid #dee2e6' }}>
                         <span style={{ fontSize: '12px', color: '#6c757d', display: 'block' }}>Thuật toán sử dụng</span>
-                        <strong style={{ fontSize: '15px', color: '#007bff' }}>Random Forest / XGBoost</strong>
+                        <strong style={{ fontSize: '15px', color: '#007bff' }}>Random Forest / Logistic Regression / Gradient Boosting (XGBoost/LightGBM)</strong>
                     </div>
                     <div style={{ background: '#fff', padding: '12px', borderRadius: '8px', border: '1px solid #dee2e6' }}>
                         <span style={{ fontSize: '12px', color: '#6c757d', display: 'block' }}>Số lượng đặc trưng (Features)</span>
