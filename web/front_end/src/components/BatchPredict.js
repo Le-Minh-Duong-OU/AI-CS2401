@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import api from '../api';
 
-function BatchPredict({ token, onAuthError }) {
+function BatchPredict({ token, onPredictSuccess, onAuthError }) {
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -27,7 +27,7 @@ function BatchPredict({ token, onAuthError }) {
 
         try {
 
-            
+
             const response = await api.post(`/predict-batch`, formData, { responseType: 'blob' });
 
             const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -41,10 +41,12 @@ function BatchPredict({ token, onAuthError }) {
 
             setMessage('Dự đoán hàng loạt thành công! File kết quả đã được tải xuống thiết bị của bạn.');
             setFile(null);
+            if (onPredictSuccess) onPredictSuccess();
+
         } catch (error) {
             console.error("Lỗi dự đoán hàng loạt:", error);
             if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-                onAuthError();
+                setMessage(error.response)
             } else {
                 setMessage('Đã xảy ra lỗi trong quá trình xử lý file. Vui lòng kiểm tra lại cấu trúc file CSV.');
             }

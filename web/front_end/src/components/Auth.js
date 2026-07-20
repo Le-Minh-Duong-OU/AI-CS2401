@@ -46,7 +46,10 @@ function Auth({ onLoginSuccess }) {
     }
   };
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    // Chặn trình duyệt reload trang khi bấm Enter
+    if (e) e.preventDefault();
+
     // Chạy hàm giám sát dữ liệu trước khi gọi API
     if (!validateInputs()) return;
 
@@ -88,94 +91,96 @@ function Auth({ onLoginSuccess }) {
           Xác thực tài khoản
         </h3>
 
-        {/* Ô nhập Tài khoản */}
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            type="text"
-            placeholder="Tên đăng nhập"
-            value={username}
-            onChange={e => {
-              setUsername(e.target.value);
-              if (message) setMessage(''); // Xóa thông báo lỗi khi người dùng sửa dữ liệu
-            }}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              borderRadius: '6px',
-              border: '1px solid #ccc',
-              fontSize: '15px',
-              boxSizing: 'border-box',
-              outline: 'none'
-            }}
-          />
-        </div>
+        {/* BỌC TOÀN BỘ BẰNG THẺ FORM VÀ BẮT SỰ KIỆN onSubmit */}
+        <form onSubmit={handleLogin}>
+          {/* Ô nhập Tài khoản */}
+          <div style={{ marginBottom: '15px' }}>
+            <input
+              type="text"
+              placeholder="Tên đăng nhập"
+              value={username}
+              onChange={e => {
+                setUsername(e.target.value);
+                if (message) setMessage('');
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #ccc',
+                fontSize: '15px',
+                boxSizing: 'border-box',
+                outline: 'none'
+              }}
+            />
+          </div>
 
-        {/* Ô nhập Mật khẩu */}
-        <div style={{ marginBottom: '25px' }}>
-          <input
-            type="password"
-            placeholder="Mật khẩu"
-            value={password}
-            onChange={e => {
-              setPassword(e.target.value);
-              if (message) setMessage(''); // Xóa thông báo lỗi khi người dùng sửa dữ liệu
-            }}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              borderRadius: '6px',
-              border: '1px solid #ccc',
-              fontSize: '15px',
-              boxSizing: 'border-box',
-              outline: 'none'
-            }}
-          />
-        </div>
+          {/* Ô nhập Mật khẩu */}
+          <div style={{ marginBottom: '25px' }}>
+            <input
+              type="password"
+              placeholder="Mật khẩu"
+              value={password}
+              onChange={e => {
+                setPassword(e.target.value);
+                if (message) setMessage(''); // Xóa thông báo lỗi khi người dùng sửa dữ liệu
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #ccc',
+                fontSize: '15px',
+                boxSizing: 'border-box',
+                outline: 'none'
+              }}
+            />
+          </div>
 
-        {/* Khung chứa 2 nút hành động */}
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button
-            onClick={handleLogin}
-            style={{
-              flex: 1,
-              backgroundColor: '#007bff',
-              color: 'white',
-              padding: '11px',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '15px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseOver={(e) => e.target.style.backgroundColor = '#0069d9'}
-            onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
-          >
-            Đăng nhập
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              type="submit"
+              style={{
+                flex: 1,
+                backgroundColor: '#007bff',
+                color: 'white',
+                padding: '11px',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '15px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#0069d9'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
+            >
+              Đăng nhập
+            </button>
 
-          <button
-            onClick={handleRegister}
-            style={{
-              flex: 1,
-              backgroundColor: '#6c757d',
-              color: 'white',
-              padding: '11px',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '15px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseOver={(e) => e.target.style.backgroundColor = '#5a6268'}
-            onMouseOut={(e) => e.target.style.backgroundColor = '#6c757d'}
-          >
-            Đăng ký
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handleRegister}
+              style={{
+                flex: 1,
+                backgroundColor: '#6c757d',
+                color: 'white',
+                padding: '11px',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '15px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#5a6268'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#6c757d'}
+            >
+              Đăng ký
+            </button>
+          </div>
+        </form>
 
-        {/* Thông báo kết quả / Cảnh báo giám sát */}
         {message && (
           <p style={{
             marginTop: '20px',

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # --- Dịch vụ Backend ---
+  backend:
+    build:
+      context: ./back_end
+      dockerfile: Dockerfile
+    container_name: hotel_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount thư mục lưu DB ra ngoài máy thật để không mất dữ liệu sqlite3 khi tắt container
+      - ./back_end:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  # --- Dịch vụ Frontend ---
+  frontend:
+    build:
+      context: ./front_end
+      dockerfile: Dockerfile
+    container_name: hotel_frontend
+    ports:
+      - "3000:80"  # Truy cập web qua cổng http://localhost:3000
+    depends_on:
+      - backend

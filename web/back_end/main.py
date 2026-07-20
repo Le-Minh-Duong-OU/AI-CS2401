@@ -125,6 +125,9 @@ def predict_booking(data_dict: dict):
         
     return prediction, confidence
 # ================= CÁC ENDPOINT ĐĂNG KÝ / ĐĂNG NHẬP OAUTH2 =================
+@app.get("/check-token")
+def check_token(current_user: str = Depends(get_current_user)):
+    return {"valid": True, "username": current_user}
 
 @app.post("/register")
 def register(username: str, password_raw: str):

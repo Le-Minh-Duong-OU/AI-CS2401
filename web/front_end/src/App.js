@@ -1,19 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Auth from './components/Auth';
 import Predict from './components/Predict';
 import History from './components/History';
 import BatchPredict from './components/BatchPredict';
 import InfoModel from './components/InfoModel';
+import api from './api';
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const [token, setToken] = useState(null);
+
+  const [isLoading, setIsLoading] = useState(true);
   const [refreshHistory, setRefreshHistory] = useState(0);
   const [activeTab, setActiveTab] = useState('single');
   const [showInfo, setShowInfo] = useState(false);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+
+    if (!storedToken) {
+      setToken(null);
+      setIsLoading(false);
+      return;
+    }
+    const verifyToken = async () => {
+      try {
+        await api.get('/check-token');
+        setToken(storedToken);
+      } catch (error) {
+        console.error("Token không hợp lệ hoặc đã hết hạn:", error);
+        localStorage.removeItem('token');
+        setToken(null);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    verifyToken();
+  }, []);
+
+  const handleLoginSuccess = (newToken) => {
+    localStorage.setItem('token', newToken);
+    setActiveTab('single')
+    setToken(newToken);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
+    setActiveTab('single')
     setToken('');
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
+        <p>Đang kiểm tra đăng nhập...</p>
+      </div>
+    );
+  }
+
+  if (!token) {
+    return <Auth onLoginSuccess={handleLoginSuccess} />;
+  }
 
   const renderSinglePredict = () => {
     return (
@@ -39,7 +85,6 @@ function App() {
       <hr />
 
       {!token ? (
-        // Nếu chưa đăng nhập -> Hiện file Login/Register
         <Auth onLoginSuccess={(newToken) => setToken(newToken)} />
       ) : (
         // Nếu đã đăng nhập -> Hiện các chức năng chính
